@@ -103,9 +103,7 @@ class PythonDriverTest(DriverRunTest):
                 shutil.copy(driver_src, driver_dst)
             test_driver = os.path.join(working_dir, "driver_python.py")
             code_dir = os.path.join(working_dir, "code")
-            dir_path = "tests/integration/fixtures/job_archive"
-            src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), dir_path)
-            shutil.copytree(src_dir, code_dir)
+            shutil.copytree("tests/integration/fixtures/job_archive", code_dir)
             # Set envs for the driver
             env_vars["CODE_ENTRYPOINT"] = "my_package/entrypoint.py"
 

@@ -458,7 +458,9 @@ class DataScienceJobCreationErrorTest(DataScienceJobPayloadTest):
 
 
 class ScriptRuntimeArtifactTest(unittest.TestCase):
-    DIR_SOURCE_PATH = os.path.join(os.path.dirname(__file__), "../../../integration/fixtures/job_archive")
+    DIR_SOURCE_PATH = os.path.join(
+        os.path.dirname(__file__), "../../../integration/fixtures/job_archive"
+    )
     SCRIPT_SOURCE_PATH = os.path.join(
         os.path.dirname(__file__), "../../../integration/fixtures/job_archive/main.py"
     )
@@ -476,6 +478,7 @@ class ScriptRuntimeArtifactTest(unittest.TestCase):
                     "job_archive/my_module.py",
                     "job_archive/script.sh",
                     "job_archive/main.py",
+                    "job_archive/test_notebook.ipynb",
                     "job_archive/my_package/__init__.py",
                     "job_archive/my_package/entrypoint.py",
                     "job_archive/my_package/entrypoint_ads.py",
