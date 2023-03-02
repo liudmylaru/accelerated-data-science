@@ -20,13 +20,13 @@ from ads.common.oci_logging import ConsolidatedLog, OCILog, OCILogGroup
 from ads.model.deployment import ModelDeployer
 from ads.model.deployment.model_deployment import ModelDeploymentLogType
 from tests.integration.config import (
-    NETWORKS_COMPARTMENT_OCID,
-    JOBS_IN_NETWORKS_LOG_OCID,
-    JOBRUNPRE_OCID,
-    DC_LOG_GROUP_OCID,
-    DC_ACCESS_LOG_OCID,
-    DC_PREDICT_LOG_OCID,
-    DC_MODEL_DEPLOYMENT_OCID,
+    IT_NETWORKS_COMPARTMENT_OCID,
+    IT_JOBS_IN_NETWORKS_LOG_OCID,
+    IT_JOBRUNPRE_OCID,
+    IT_DC_LOG_GROUP_OCID,
+    IT_DC_ACCESS_LOG_OCID,
+    IT_DC_PREDICT_LOG_OCID,
+    IT_DC_MODEL_DEPLOYMENT_OCID,
 )
 
 # logging.getLogger().setLevel(logging.DEBUG)
@@ -45,8 +45,8 @@ class StopCounter:
 
 class OCILoggingTestCase(unittest.TestCase):
     # Compartment ID for the networks compartment
-    COMPARTMENT_ID = NETWORKS_COMPARTMENT_OCID
-    LOG_ID = JOBS_IN_NETWORKS_LOG_OCID
+    COMPARTMENT_ID = IT_NETWORKS_COMPARTMENT_OCID
+    LOG_ID = IT_JOBS_IN_NETWORKS_LOG_OCID
     existing_env = {}
 
     @classmethod
@@ -127,7 +127,7 @@ class OCILoggingTestCase(unittest.TestCase):
     def test_invalid_log_tail(self):
         oci_log = OCILog.from_ocid(self.LOG_ID)
         tail = oci_log.tail(
-            source=JOBRUNPRE_OCID,
+            source=IT_JOBRUNPRE_OCID,
             limit=1,
         )
         assert len(tail) == 0
@@ -161,11 +161,11 @@ class OCILoggingTestCase(unittest.TestCase):
 
 
 class ConsolidatedLoggingTestCase(unittest.TestCase):
-    COMPARTMENT_ID = NETWORKS_COMPARTMENT_OCID
-    LOG_GROUP_ID = DC_LOG_GROUP_OCID
-    ACCESS_LOG_ID = DC_ACCESS_LOG_OCID
-    PREDICT_LOG_ID = DC_PREDICT_LOG_OCID
-    MODEL_DEPLOYMENT_ID = DC_MODEL_DEPLOYMENT_OCID
+    COMPARTMENT_ID = IT_NETWORKS_COMPARTMENT_OCID
+    LOG_GROUP_ID = IT_DC_LOG_GROUP_OCID
+    ACCESS_LOG_ID = IT_DC_ACCESS_LOG_OCID
+    PREDICT_LOG_ID = IT_DC_PREDICT_LOG_OCID
+    MODEL_DEPLOYMENT_ID = IT_DC_MODEL_DEPLOYMENT_OCID
 
     @classmethod
     def setUpClass(cls) -> None:
