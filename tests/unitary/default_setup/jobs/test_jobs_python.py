@@ -20,9 +20,11 @@ from tests.unitary.default_setup.jobs.test_jobs_base import (
 class PythonRuntimeTest(DataScienceJobPayloadTest):
     """Contains tests from PythonRuntime in ADS Jobs API."""
 
-    DIR_SOURCE_PATH = os.path.join(os.path.dirname(__file__), "test_files/job_archive")
+    DIR_SOURCE_PATH = os.path.join(
+        os.path.dirname(__file__), "../../../integration/fixtures/job_archive"
+    )
     SCRIPT_SOURCE_PATH = os.path.join(
-        os.path.dirname(__file__), "test_files/job_archive/main.py"
+        os.path.dirname(__file__), "../../../integration/fixtures/job_archive/main.py"
     )
 
     def test_prepare_artifact_with_dir(self):
@@ -101,7 +103,7 @@ class PythonDriverTest(DriverRunTest):
                 shutil.copy(driver_src, driver_dst)
             test_driver = os.path.join(working_dir, "driver_python.py")
             code_dir = os.path.join(working_dir, "code")
-            dir_path = "./test_files/job_archive"
+            dir_path = "tests/integration/fixtures/job_archive"
             src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), dir_path)
             shutil.copytree(src_dir, code_dir)
             # Set envs for the driver

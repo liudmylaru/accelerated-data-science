@@ -458,9 +458,9 @@ class DataScienceJobCreationErrorTest(DataScienceJobPayloadTest):
 
 
 class ScriptRuntimeArtifactTest(unittest.TestCase):
-    DIR_SOURCE_PATH = os.path.join(os.path.dirname(__file__), "test_files/job_archive")
+    DIR_SOURCE_PATH = os.path.join(os.path.dirname(__file__), "../../../integration/fixtures/job_archive")
     SCRIPT_SOURCE_PATH = os.path.join(
-        os.path.dirname(__file__), "test_files/job_archive/main.py"
+        os.path.dirname(__file__), "../../../integration/fixtures/job_archive/main.py"
     )
 
     def test_prepare_artifact_with_dir(self):

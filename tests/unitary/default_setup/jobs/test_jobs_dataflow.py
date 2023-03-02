@@ -455,7 +455,9 @@ class TestDataFlowNotebookRuntime:
                 .with_notebook(
                     os.path.join(
                         curr_folder,
-                        "test_files",
+                        "../../..",
+                        "integration",
+                        "fixtures",
                         "exclude_check.ipynb",
                     )
                 )
