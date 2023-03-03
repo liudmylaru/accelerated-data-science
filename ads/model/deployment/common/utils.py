@@ -26,6 +26,7 @@ from ads.common.decorator.runtime_dependency import (
     runtime_dependency,
     OptionalDependency,
 )
+from ads.config import COMPARTMENT_OCID, PROJECT_OCID
 
 
 logger = logging.getLogger(__name__)
@@ -247,6 +248,7 @@ class OCIClientManager:
         Returns:
             str: model ocid
         """
+        properties_dict = {}
         if properties:
             properties_dict = (
                 properties
@@ -287,10 +289,18 @@ class OCIClientManager:
         Returns:
             str: model ocid
         """
+        project_id = properties.get("project_id", PROJECT_OCID)
+        compartment_id = properties.get("compartment_id", COMPARTMENT_OCID)
+
+        if not project_id or not compartment_id:
+            raise ValueError(
+                "Both `project_id` and `compartment_id` need to be provided. You can pass them through kwargs or `ModelDeploymentProperties` object."
+            )
+
         create_model_details = CreateModelDetails(
             display_name=properties.get("display_name", None),
-            project_id=properties["project_id"],
-            compartment_id=properties["compartment_id"],
+            project_id=project_id,
+            compartment_id=compartment_id,
         )
 
         model = self.ds_client.create_model(create_model_details).data

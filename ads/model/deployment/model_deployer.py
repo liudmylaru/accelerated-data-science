@@ -145,6 +145,9 @@ class ModelDeployer:
         ModelDeployment
             A ModelDeployment instance.
         """
+        warnings.warn(
+            "Make sure to provide `compartment_id`, `project_id`, `instance_count`, `instance_shape`, `memory_in_gbs` and `ocpus` either through `kwargs` or `properties`"
+        )
         model_deployment = ModelDeployment(
             properties,
             **kwargs,
@@ -188,6 +191,9 @@ class ModelDeployer:
             A ModelDeployment instance
 
         """
+        warnings.warn(
+            "Make sure to provide `compartment_id`, `project_id`, `instance_count`, `instance_shape`, `memory_in_gbs` and `ocpus` either through `kwargs` or `properties`"
+        )
         if properties:
             model_id = self.client_manager.prepare_artifact(
                 model_uri=model_uri, properties=properties
@@ -277,7 +283,10 @@ class ModelDeployer:
             model_deployment_object = ModelDeployment(
                 oci_model_deployment_object,
             )
-            return model_deployment_object
+            model_deployment_object.set_spec(
+                model_deployment_object.CONST_ID, oci_model_deployment_object.id
+            )
+            return model_deployment_object.sync()
         except Exception as e:
             utils.get_logger().error(
                 "Getting model deployment failed with error: %s", e
@@ -382,7 +391,13 @@ class ModelDeployer:
             self.ds_client.list_model_deployments, compartment_id, **kwargs
         ).data
 
-        return [ModelDeployment(deployment) for deployment in deployments]
+        result = []
+        for deployment in deployments:
+            model_deployment = ModelDeployment(deployment)
+            model_deployment.set_spec(model_deployment.CONST_ID, deployment.id)
+            result.append(model_deployment.sync())
+
+        return result
 
     def show_deployments(
         self,

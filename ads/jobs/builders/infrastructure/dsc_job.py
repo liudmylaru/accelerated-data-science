@@ -812,7 +812,30 @@ DSCJobRun = DataScienceJobRun
 
 
 class DataScienceJob(Infrastructure):
-    """Represents the OCI Data Science Job infrastructure."""
+    """Represents the OCI Data Science Job infrastructure.
+
+    To configure the infrastructure for a Data Science Job::
+
+        infrastructure = (
+            DataScienceJob()
+            # Configure logging for getting the job run outputs.
+            .with_log_group_id("<log_group_ocid>")
+            # Log resource will be auto-generated if log ID is not specified.
+            .with_log_id("<log_ocid>")
+            # If you are in an OCI data science notebook session,
+            # the following configurations are not required.
+            # Configurations from the notebook session will be used as defaults.
+            .with_compartment_id("<compartment_ocid>")
+            .with_project_id("<project_ocid>")
+            .with_subnet_id("<subnet_ocid>")
+            .with_shape_name("VM.Standard.E3.Flex")
+            # Shape config details are applicable only for the flexible shapes.
+            .with_shape_config_details(memory_in_gbs=16, ocpus=1)
+            # Minimum/Default block storage size is 50 (GB).
+            .with_block_storage_size(50)
+        )
+
+    """
 
     CONST_PROJECT_ID = "projectId"
     CONST_COMPARTMENT_ID = "compartmentId"
@@ -1496,6 +1519,16 @@ class DataScienceJob(Infrastructure):
         list
             A list of oci.data_science.models.JobShapeSummary objects
             containing the information of the supported shapes.
+
+        Examples
+        --------
+        To get a list of shape names::
+
+            shapes = DataScienceJob.fast_launch_shapes(
+                compartment_id=os.environ["PROJECT_COMPARTMENT_OCID"]
+            )
+            shape_names = [shape.name for shape in shapes]
+
         """
         shapes = oci.pagination.list_call_get_all_results(
             DSCJob.init_client().list_job_shapes,
@@ -1520,6 +1553,16 @@ class DataScienceJob(Infrastructure):
         list
             A list of oci.data_science.models.FastLaunchJobConfigSummary objects
             containing the information of the supported shapes.
+
+        Examples
+        --------
+        To get a list of shape names::
+
+            shapes = DataScienceJob.fast_launch_shapes(
+                compartment_id=os.environ["PROJECT_COMPARTMENT_OCID"]
+            )
+            shape_names = [shape.shape_name for shape in shapes]
+
         """
         shapes = oci.pagination.list_call_get_all_results(
             DSCJob.init_client().list_fast_launch_job_configs,

@@ -266,6 +266,8 @@ class HuggingFaceModelSerializer(ModelSerializer):
 
     def serialize(self, estimator, model_path, **kwargs):
         estimator.save_pretrained(save_directory=model_path)
+        estimator.model.config.use_pretrained_backbone = False
+        estimator.model.config.save_pretrained(save_directory=model_path)
 
 
 class OnnxModelSerializer(ModelSerializer):

@@ -205,10 +205,11 @@ class OCIHelper:
         if not os.path.exists(output_dir):
             logger.error("Output directory %s not found.", output_dir)
             return
-        output_uri = OCIHelper.substitute_output_uri(output_uri)
+
         if not output_uri:
             logger.info("OUTPUT_URI is not defined. No file is copied.")
             return
+        output_uri = OCIHelper.substitute_output_uri(output_uri)
 
         logger.debug("Copying files in %s to %s...", output_dir, output_uri)
         parsed = urlparse(output_uri)

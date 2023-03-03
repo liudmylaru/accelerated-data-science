@@ -15,7 +15,10 @@ from ads.opctl.config.utils import convert_notebook
 
 
 class CondaRuntime(Runtime):
-    """Represents a job runtime with conda pack"""
+    """Represents a job runtime with conda pack
+    This is the base class for Runtime using conda environment.
+    The ``CondaRuntime`` is not designed to be used directly when creating a job.
+    """
 
     CONST_CONDA = "conda"
     CONST_CONDA_TYPE = "type"
@@ -30,12 +33,28 @@ class CondaRuntime(Runtime):
 
     @property
     def conda(self) -> dict:
-        """The conda pack specification
+        """The conda environment specification.
+
+        For service conda environment, the specification contains:
+
+        * ``type``, the type of the conda environment.
+          This is always ``service`` for service conda environment.
+        * ``slug``, the slug of the conda environment.
+
+        For custom conda environment, the specification contains:
+
+        * ``type``, the type of the conda environment.
+          This is always ``published`` for custom conda environment.
+        * ``uri``, the uri of the conda environment, e.g. oci://bucket@namespace/prefix/to/conda
+        * ``region``, the region of the bucket in which the conda environment is stored.
+          By default, ADS will determine the region based on the authenticated API key or resource principal.
+          This is only needed if your conda environment is stored in a different region.
 
         Returns
         -------
         dict
-            A dictionary with "type" and "slug" as keys.
+            A dictionary containing the conda environment specifications.
+
         """
         return self.get_spec(self.CONST_CONDA)
 
@@ -62,6 +81,7 @@ class CondaRuntime(Runtime):
 
     def with_custom_conda(self, uri: str, region: str = None):
         """Specifies the custom conda pack for running the job
+        Make sure you have configured the IAM policy for the job run to access the conda environment.
 
         Parameters
         ----------
@@ -72,7 +92,8 @@ class CondaRuntime(Runtime):
             this is shown as the "source" of the conda pack.
         region: str, optional
             The region of the bucket storing the custom conda pack, by default None.
-            If region is not specified, ADS will use the region from your authentication credentials,
+            If region is not specified, ADS will use the region from your authentication credentials:
+
             * For API Key, config["region"] is used.
             * For Resource Principal, signer.region is used.
 
@@ -98,7 +119,36 @@ class CondaRuntime(Runtime):
 
 
 class ScriptRuntime(CondaRuntime):
-    """Represents job runtime with scripts and conda pack"""
+    """Represents job runtime with scripts and conda pack.
+
+    This runtime is designed to define job artifacts and configurations supported by OCI Data Science Jobs natively.
+    It can be used with any script types that is supported by the OCI Data Science Jobs,
+    including shell scripts and python scripts.
+
+    To run a script with all dependencies contained in a local folder::
+
+        runtime = (
+            ScriptRuntime()
+            # Specify the service conda environment by slug name.
+            .with_service_conda("pytorch110_p38_cpu_v1")
+            # The job artifact can be a single Python script, a directory or a zip file.
+            .with_source("local/path/to/code_dir")
+            # Environment variable
+            .with_environment_variable(NAME="Welcome to OCI Data Science.")
+            # Command line argument
+            .with_argument("100 linux \"hi there\"")
+            # The entrypoint is applicable only to directory or zip file as source
+            # The entrypoint should be a path relative to the working dir.
+            # Here my_script.sh is a file in the code_dir/my_package directory
+            .with_entrypoint("my_package/my_script.sh")
+        )
+
+
+    References
+    ----------
+    https://docs.oracle.com/en-us/iaas/data-science/using/jobs-artifact.htm
+
+    """
 
     CONST_ENTRYPOINT = "entrypoint"
     CONST_SCRIPT_PATH = "scriptPathURI"
@@ -120,7 +170,7 @@ class ScriptRuntime(CondaRuntime):
         Parameters
         ----------
         uri : str
-            URI to the Python or Shell script, which can be any URI supported by fsspec,
+            URI to the source code script, which can be any URI supported by fsspec,
             including http://, https:// and OCI object storage.
             For example: oci://your_bucket@your_namespace/path/to/script.py
 
@@ -147,7 +197,8 @@ class ScriptRuntime(CondaRuntime):
             If the source code is a single file, URI can be any URI supported by fsspec,
             including http://, https:// and OCI object storage.
             For example: oci://your_bucket@your_namespace/path/to/script.py
-            If the source code is a directory, only local directory is supported.
+            URI can also be a folder or a zip file containing the source code.
+            In that case, entrypoint is required.
 
         entrypoint : str, optional
             The relative path of the script to be set as entrypoint when source is a zip/tar/directory.
@@ -217,7 +268,7 @@ class _PythonRuntimeMixin(Runtime):
 
         Returns
         -------
-        self
+        Self
             The runtime instance.
         """
         self.set_spec(self.CONST_OUTPUT_DIR, output_dir)
@@ -318,7 +369,35 @@ class _PythonRuntimeMixin(Runtime):
 
 
 class PythonRuntime(ScriptRuntime, _PythonRuntimeMixin):
-    """Represents a job runtime using ADS driver script to run Python code"""
+    """Represents a job runtime using ADS driver script to run Python code
+
+    Example::
+
+        runtime = (
+            PythonRuntime()
+            # Specify the service conda environment by slug name.
+            .with_service_conda("pytorch110_p38_cpu_v1")
+            # The job artifact can be a single Python script, a directory or a zip file.
+            .with_source("local/path/to/code_dir")
+            # Environment variable
+            .with_environment_variable(NAME="Welcome to OCI Data Science.")
+            # Command line argument, arg1 --key arg2
+            .with_argument("arg1", key="arg2")
+            # Set the working directory
+            # When using a directory as source, the default working dir is the parent of code_dir.
+            # Working dir should be a relative path beginning from the source directory (code_dir)
+            .with_working_dir("code_dir")
+            # The entrypoint is applicable only to directory or zip file as source
+            # The entrypoint should be a path relative to the working dir.
+            # Here my_script.py is a file in the code_dir/my_package directory
+            .with_entrypoint("my_package/my_script.py")
+            # Add an additional Python path, relative to the working dir (code_dir/other_packages).
+            .with_python_path("other_packages")
+            # Copy files in "code_dir/output" to object storage after job finishes.
+            .with_output("output", "oci://bucket_name@namespace/path/to/dir")
+        )
+
+    """
 
     attribute_map = {}
     attribute_map.update(ScriptRuntime.attribute_map)
@@ -326,7 +405,24 @@ class PythonRuntime(ScriptRuntime, _PythonRuntimeMixin):
 
 
 class NotebookRuntime(CondaRuntime):
-    """Represents a job runtime with Jupyter notebook"""
+    """Represents a job runtime with Jupyter notebook
+
+    To run a job with a Jupyter notebook,
+    you can define the run time as::
+
+        runtime = (
+            NotebookRuntime()
+            .with_notebook(
+                path="https://raw.githubusercontent.com/tensorflow/docs/master/site/en/tutorials/customization/basics.ipynb",
+                encoding='utf-8'
+            )
+            .with_service_conda("tensorflow28_p38_cpu_v1")
+            .with_environment_variable(GREETINGS="Welcome to OCI Data Science")
+            .with_exclude_tag(["ignore", "remove"])
+            .with_output("oci://bucket_name@namespace/path/to/dir")
+        )
+
+    """
 
     CONST_NOTEBOOK_PATH = "notebookPathURI"
     CONST_NOTEBOOK_ENCODING = "notebookEncoding"
@@ -361,8 +457,8 @@ class NotebookRuntime(CondaRuntime):
         """The encoding of the notebook"""
         return self.get_spec(self.CONST_NOTEBOOK_ENCODING)
 
-    def with_notebook(self, path: str, encoding="utf-8"):
-        """Specifies the notebook to be converted to python script and run as a job.
+    def with_notebook(self, path: str, encoding="utf-8") -> NotebookRuntime:
+        """Specifies the notebook to be run as a job.
 
         Parameters
         ----------
@@ -382,7 +478,7 @@ class NotebookRuntime(CondaRuntime):
         """A list of cell tags indicating cells to be excluded from the job"""
         return self.get_spec(self.CONST_EXCLUDE_TAG, [])
 
-    def with_exclude_tag(self, *tags):
+    def with_exclude_tag(self, *tags) -> NotebookRuntime:
         """Specifies the cell tags in the notebook to exclude cells from the job script.
 
         Parameters
@@ -408,7 +504,7 @@ class NotebookRuntime(CondaRuntime):
         """URI for storing the output notebook and files"""
         return self.get_spec(self.CONST_OUTPUT_URI)
 
-    def with_output(self, output_uri: str):
+    def with_output(self, output_uri: str) -> NotebookRuntime:
         """Specifies the output URI for storing the output notebook and files.
 
         Parameters
@@ -426,7 +522,28 @@ class NotebookRuntime(CondaRuntime):
 
 
 class GitPythonRuntime(CondaRuntime, _PythonRuntimeMixin):
-    """Represents a job runtime with source code from git repository"""
+    """Represents a job runtime with source code from git repository
+
+    Example::
+
+        runtime = (
+            GitPythonRuntime()
+            .with_environment_variable(GREETINGS="Welcome to OCI Data Science")
+            # Specify the service conda environment by slug name.
+            .with_service_conda("pytorch19_p37_gpu_v1")
+            # Specify the git repository
+            # Optionally, you can specify the branch or commit
+            .with_source("https://github.com/pytorch/tutorials.git")
+            # Entrypoint is a relative path from the root of the git repo.
+            .with_entrypoint("beginner_source/examples_nn/polynomial_nn.py")
+            # Copy files in "beginner_source/examples_nn" to object storage after job finishes.
+            .with_output(
+              output_dir="beginner_source/examples_nn",
+              output_uri="oci://bucket_name@namespace/path/to/dir"
+            )
+        )
+
+    """
 
     CONST_GIT_URL = "url"
     CONST_BRANCH = "branch"
@@ -552,7 +669,7 @@ class GitPythonRuntime(CondaRuntime, _PythonRuntimeMixin):
         return super().with_argument(*args, **kwargs)
 
     @property
-    def ssh_secret_ocid(self):
+    def ssh_secret_ocid(self) -> str:
         """The OCID of the OCI Vault secret storing the Git SSH key."""
         return self.get_spec(self.CONST_GIT_SSH_SECRET_ID)
 

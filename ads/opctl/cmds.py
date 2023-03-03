@@ -212,7 +212,6 @@ def run(config: Dict, **kwargs) -> Dict:
         else:
             if not kwargs["dry_run"]:
                 verify_and_publish_image(kwargs["nopush"], config)
-
                 print("running image: " + config["spec"]["cluster"]["spec"]["image"])
             cluster_def = YamlSpecParser.parse_content(config)
 

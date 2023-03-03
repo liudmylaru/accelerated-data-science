@@ -182,6 +182,9 @@ class NotebookArtifact(Artifact):
         driver_script = os.path.join(
             os.path.dirname(__file__), "../../templates", self.CONST_DRIVER_SCRIPT
         )
+        driver_utils = os.path.join(
+            os.path.dirname(__file__), "../../templates", self.CONST_DRIVER_UTILS
+        )
         notebook_path = os.path.join(self.temp_dir.name, os.path.basename(self.source))
         output_path = (
             os.path.join(
@@ -194,6 +197,7 @@ class NotebookArtifact(Artifact):
         with zipfile.ZipFile(output_path, "w") as zip_file:
             zip_file.write(notebook_path, os.path.basename(notebook_path))
             zip_file.write(driver_script, os.path.basename(driver_script))
+            zip_file.write(driver_utils, os.path.basename(driver_utils))
         self.path = output_path
 
 

@@ -365,7 +365,6 @@ def add_options(options):
 )
 @click.option(
     "--auto_increment",
-    "-i",
     default=False,
     is_flag=True,
     help="Increments tag of the image while rebuilding",
