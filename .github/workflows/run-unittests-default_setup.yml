@@ -10,12 +10,9 @@ jobs:
     steps:
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
       - name: install ads opctl
-        shell: bash
         run: |
-          $CONDA/bin/conda init
-          source /home/runner/.bashrc
           pip install oracle-ads[opctl]
           ads opctl conda --help
