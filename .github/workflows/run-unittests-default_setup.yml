@@ -20,3 +20,19 @@ jobs:
       - name: build job-local image
         run: |
           ads opctl build-image -d job-local
+          docker images
+
+      - name: build conda pack
+        run: |
+          cat <<EOF > liuda-environment.yaml
+          channels:
+            - defaults
+            - conda-forge
+          dependencies:
+            - main::scikit-learn
+            - main::pip
+            - pip:
+              - oracle-ads[data,geo,notebook,text]
+          EOF
+          ads opctl conda create -n liuda-test-pack -f liuda-environment.yaml
+          conda env list
