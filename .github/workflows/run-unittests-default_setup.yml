@@ -16,3 +16,7 @@ jobs:
         run: |
           pip install oracle-ads[opctl]
           ads opctl conda --help
+
+      - name: build job-local image
+        run: |
+          ads opctl build-image -d job-local
