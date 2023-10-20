@@ -32,7 +32,10 @@ jobs:
             - main::scikit-learn
             - main::pip
             - pip:
-              - oracle-ads[data,geo,notebook,text]
+              - oracle-ads[geo,notebook,text]
           EOF
           ads opctl conda create -n liuda-test-pack -f liuda-environment.yaml
-          conda env list
+
+      - name: publish conda pack
+        run: |
+          ads opctl conda publish -p oci://liuda-bucket-test-upload@ociodscdev/conda_environments/cpu/my_simple_env_v1 -s liuda-test-pack_v1
