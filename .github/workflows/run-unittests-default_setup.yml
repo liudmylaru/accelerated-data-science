@@ -27,7 +27,7 @@ jobs:
           ads opctl build-image -d job-local
           docker images
 
-      - name: build conda pack
+      - name: prepare env yaml file
         run: |
           cat <<EOF > liuda-environment.yaml
           channels:
@@ -39,8 +39,12 @@ jobs:
             - pip:
               - oracle-ads[geo,notebook,text]
           EOF
-          ads opctl conda create -n liuda-test-pack -f liuda-environment.yaml
+          # ads opctl conda create -n liuda-test-pack -f liuda-environment.yaml
 
-      - name: publish conda pack
+#      - name: publish conda pack
+#        run: |
+#          ads opctl conda publish -d -o -p oci://liuda-bucket-test-upload@ociodscdev/conda_environments/cpu/my_simple_env_v1 -s liuda-test-pack_v1
+
+      - name: build+publish conda pack
         run: |
-          ads opctl conda publish -d -o -p oci://liuda-bucket-test-upload@ociodscdev/conda_environments/cpu/my_simple_env_v1 -s liuda-test-pack_v1
+          ads opctl conda publish -d -o -n "liuda-test-pack" -v "v1" -f liuda-environment.yaml -p oci://liuda-bucket-test-upload@ociodscdev/conda_environments/cpu/my_simple_env_v1
