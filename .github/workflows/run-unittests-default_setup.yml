@@ -43,4 +43,4 @@ jobs:
 
       - name: publish conda pack
         run: |
-          ads opctl conda publish -p oci://liuda-bucket-test-upload@ociodscdev/conda_environments/cpu/my_simple_env_v1 -s liuda-test-pack_v1
+          ads opctl conda publish -d -o -p oci://liuda-bucket-test-upload@ociodscdev/conda_environments/cpu/my_simple_env_v1 -s liuda-test-pack_v1
