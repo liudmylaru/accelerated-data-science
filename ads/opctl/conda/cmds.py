@@ -223,10 +223,13 @@ def _create(
                 pack_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pack.py")
                 pack_command = f"python {os.path.join(DEFAULT_IMAGE_HOME_DIR, 'pack.py')} --conda-path {docker_pack_folder_path} --manifest-location {os.path.join(DEFAULT_IMAGE_HOME_DIR, 'manifest.yaml')}"
 
+                tmp_file_name = tmp_file.name
+                tmp_file.close()
+                logger.info(f"Creating conda environment {tmp_file_name}")
                 # add pack script and manifest file to the mount so that archive can be created in the same container run
                 condapack_script = {
                     pack_script: {"bind": os.path.join(DEFAULT_IMAGE_HOME_DIR, "pack.py")},
-                    tmp_file.name: {"bind": os.path.join(DEFAULT_IMAGE_HOME_DIR, "manifest.yaml")}
+                    tmp_file_name: {"bind": os.path.join(DEFAULT_IMAGE_HOME_DIR, "manifest.yaml")}
                 }
                 volumes = {**volumes, **condapack_script} # | not supported in python 3.8
 
